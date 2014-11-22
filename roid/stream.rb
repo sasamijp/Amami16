@@ -28,7 +28,7 @@ end
 client = TweetStream::Client.new
 roids = {
     '春香' => {
-        :responder => Responder.new('../db/main.db'),
+        :responder => Responder.new('../db/main2.db'),
         :icon => open('../icons/haruka.png', "r")
     },
     '千早' => {
@@ -52,7 +52,7 @@ client.userstream do |status|
       rest.update text, option
     }
   elsif status.text.include?('@sa2mi')
-    res = responder.respond(status.text.gsub(/@sa2mi/i, ''))
+    res = responder.respond(status.text.gsub(/@sa2mi/i, ''), status.user.screen_name)
     Thread.new {
       text = "@#{status.user.screen_name} #{res}"
       option = {:in_reply_to_status_id => status.id.to_s}

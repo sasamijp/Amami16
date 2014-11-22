@@ -3,17 +3,20 @@
 require 'active_record'
 require 'pp'
 require 'natto'
+require 'parallel'
 require './model.rb'
+require './session.rb'
 
 class Responder
 
   def initialize(dbpath)
     @natto = Natto::MeCab.new
+    @dbpath = dbpath
+    @sessions = []
     ActiveRecord::Base.establish_connection(
         :adapter => 'sqlite3',
         :database => dbpath
     )
-    @dbpath = dbpath
   end
 
   def wakati(str)
@@ -64,43 +67,49 @@ class Responder
     d[str2.size][str1.size]
   end
 
-  def respond(str)
-    ActiveRecord::Base.establish_connection(
-        :adapter => 'sqlite3',
-        :database => @dbpath
+  def respond(str, user_id)
+
+    @sessions.push Session.new(user_id) if @sessions.find{ |v| v.user_id == user_id }.nil?
+    session = @sessions.find{ |v|v.user_id == user_id }
+    session.add_remark(false, str)
+
+    ActiveRecord::Base.establish_connection(adapter: 'sqlite3', database: @dbpath
     )
+
     wstr = wakati(str)
-    id = wakati(str).map{|v|v[0]}.map do |v|
-      Word.select(:word_target_id).where(word_text: v, word_is_joshi: 0, word_is_connector: 0)
-    end
+    pp wstr
+
+    id = Word.where(word_text: wakati(str).map{|v|v[0]}, word_is_joshi: 0, word_is_connector: 0)
     not_comp_diff = []
-    id.flatten.map{|v|v[:word_target_id]}.each do |v|
-      words = Word.where(:word_target_id => v)
-      words.each do |_v|
-        wstr.each do |__v|
-          if _v[:word_text] == __v[0] and _v[:word_is_joshi] == 0 and __v[1].match(/^助/).nil?
-            not_comp_diff << words
-            break
-          end
+    id.each do |_v|
+      wstr.each do |__v|
+        if _v[:word_text] == __v[0] and _v[:word_is_joshi] == 0 and __v[1].match(/^助/).nil?
+          not_comp_diff << Word.where(:word_target_id => _v[:word_target_id])
+          break
         end
       end
     end
-    puts not_comp_diff.length
+    pp not_comp_diff
     distances = not_comp_diff.map do |words|
       cases = split_by_connect words
       all = cases.flatten.length
       [words, cases.map{ |v|
-        (levenshtein_distance(v.map{|_v|_v[:word_text]}, wstr.map{|_v|_v[0]}) * (all/v.length.to_f))
-      }.min]
+              (levenshtein_distance(v.map{|_v|_v[:word_text]}, wstr.map{|_v|_v[0]}) * (all/v.length.to_f))
+            }.min]
     end
+    pp distances
+
     distances.delete_if{|v|v[1].nil?}
-    pp distances.sort_by{|v|v[1]}[0][0]
-    Respond.select(:respond_sentence).where(link_id: distances.sort_by{|v|v[1]}[0][0][0][:word_target_id])[0][:respond_sentence]
+    ret = Respond.select(:respond_sentence).where(link_id: distances.sort_by{|v|v[1]}[0][0][0][:word_target_id])[0][:respond_sentence]
+    session.add_remark(true, ret)
+    ret
   end
 
 end
+=begin
+h = Responder.new('../db/main2.db')
 
-#r = Responder.new('../db/main_c.db')
-#pp r.respond("誰だよ")
-
-
+loop do
+  puts h.respond gets.chomp, 'P'
+end
+=end
