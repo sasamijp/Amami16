@@ -3,7 +3,4 @@ twitterのbot@sa2miのソースです
 SSから収集した会話コーパスをもとに入力との編集距離とかで天海春香さんが言いそうなことを言わせます  
 collectにはSS収集スクリプト, roidには返答スクリプトが入ってます  
 会話例:  
-![](https://dl.dropboxusercontent.com/u/85583652/%E3%82%B9%E3%82%AF%E3%83%AA%E3%83%BC%E3%83%B3%E3%82%B7%E3%83%A7%E3%83%83%E3%83%88%202015-08-27%2018.56.02.png)
-![](https://dl.dropboxusercontent.com/u/85583652/%E3%82%B9%E3%82%AF%E3%83%AA%E3%83%BC%E3%83%B3%E3%82%B7%E3%83%A7%E3%83%83%E3%83%88%202015-08-27%2018.50.22.png)
-![](https://dl.dropboxusercontent.com/u/85583652/%E3%82%B9%E3%82%AF%E3%83%AA%E3%83%BC%E3%83%B3%E3%82%B7%E3%83%A7%E3%83%83%E3%83%88%202014-12-29%2015.55.30.png)
-
+<img width="592" alt="2015-08-27 18 56 02" src="https://user-images.githubusercontent.com/2317034/33795011-bdc835b8-dd1a-11e7-83b9-ea8789f3af41.png">
